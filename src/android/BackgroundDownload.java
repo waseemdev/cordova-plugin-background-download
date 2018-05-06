@@ -81,15 +81,17 @@ public class BackgroundDownload extends CordovaPlugin {
         private Uri targetFileUri;
         private Uri tempFileUri;
         private String uriString;
+        private String title;
         private CallbackContext callbackContext; // The callback context from which we were invoked.
         private long downloadId = DOWNLOAD_ID_UNDEFINED;
         private Timer timerProgressUpdate = null;
         private boolean isCanceled;
 
-        public Download(String uriString, String targetFileUri,
+        public Download(String uriString, String targetFileUri, String title,
                 CallbackContext callbackContext) {
             this.setUriString(uriString);
             this.setTargetFileUri(targetFileUri);
+            this.setTitle(title);
             this.setTempFileUri(Uri.fromFile(new File(android.os.Environment.getExternalStorageDirectory().getPath(),
                     Uri.parse(targetFileUri).getLastPathSegment() + "." + System.currentTimeMillis())).toString());
             this.setCallbackContext(callbackContext);
@@ -109,6 +111,14 @@ public class BackgroundDownload extends CordovaPlugin {
 
         public void setUriString(String uriString) {
             this.uriString = uriString;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
         }
 
         public Uri getTempFileUri() {
@@ -202,7 +212,7 @@ public class BackgroundDownload extends CordovaPlugin {
             return;
         }
 
-        Download curDownload = new Download(args.get(0).toString(), args.get(1).toString(), callbackContext);
+        Download curDownload = new Download(args.get(0).toString(), args.get(1).toString(), args.get(2).toString(), callbackContext);
 
         if (activeDownloads.containsKey(curDownload.getUriString())) {
             return;
@@ -220,7 +230,7 @@ public class BackgroundDownload extends CordovaPlugin {
 
                 DownloadManager mgr = getDownloadManager();
                 DownloadManager.Request request = new DownloadManager.Request(source);
-                request.setTitle("org.apache.cordova.backgroundDownload plugin");
+                request.setTitle(curDownload.getTitle());
                 request.setVisibleInDownloadsUi(false);
 
                 // hide notification. Not compatible with current android api.
